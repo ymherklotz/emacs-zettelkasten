@@ -3,6 +3,21 @@
 ;;;
 ;;; Used to organise notes using the Zettelkasten method.
 ;;;
+;;; Copyright (C) 2020  Yann Herklotz
+;;;
+;;; This program is free software: you can redistribute it and/or modify
+;;; it under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation, either version 3 of the License, or
+;;; (at your option) any later version.
+;;;
+;;; This program is distributed in the hope that it will be useful,
+;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+;;;
 ;;; Code:
 
 (defgroup zettelkasten nil
@@ -57,21 +72,22 @@ For supported options, please consult `format-time-string'."
 (defun zettelkasten-list-notes ()
   "Return all the ids and titles of notes in the `zettelkasten-directory'."
   (shell-command (concat "grep -i \"#+TITLE:\" " zettelkasten-directory "/*"))
-  (setq match-list nil)
-  (with-current-buffer "*Shell Command Output*"
-    (set-buffer "*Shell Command Output*")
-    (setq morelines t)
-    (goto-char 1)
-    (while morelines
-      (setq current-string (buffer-substring-no-properties (line-beginning-position) (line-end-position)))
-      (when (string-match
-             (format "\\([0-9]*\\)\\.%s:#\\+TITLE: \\(.*\\)" zettelkasten-extension)
-             current-string)
-        (setq matched-string (concat (match-string 1 current-string) " - " (match-string 2 current-string)))
-        (setq match-list (append match-list (list matched-string))))
-      (setq morelines (= 0 (forward-line 1)))))
-  (kill-buffer "*Shell Command Output*")
-  match-list)
+  (let (match-list morelines current-string matched-string)
+    (with-current-buffer "*Shell Command Output*"
+      (set-buffer "*Shell Command Output*")
+      (setq morelines t)
+      (goto-char 1)
+      (while morelines
+        (setq current-string (buffer-substring-no-properties (line-beginning-position) (line-end-position)))
+        (when (string-match
+               (format "\\([0-9]*\\)\\.%s:#\\+TITLE: \\(.*\\)" zettelkasten-extension)
+               current-string)
+          (setq matched-string (concat (match-string 1 current-string) ": "
+                                (match-string 2 current-string)))
+          (setq match-list (append match-list (list matched-string))))
+        (setq morelines (= 0 (forward-line 1)))))
+    (kill-buffer "*Shell Command Output*")
+    match-list))
 
 (defun zettelkasten-find-new-note-name (note iteration)
   "Iterate on ITERATION until a usable file based on NOTE is found."
@@ -94,7 +110,10 @@ For supported options, please consult `format-time-string'."
 
 (defun zettelkasten-format-link (note)
   "Format a link to a NOTE."
-  (format zettelkasten-link-format note (zettelkasten-get-id note) zettelkasten-extension))
+  (format zettelkasten-link-format
+          note
+          (zettelkasten-get-id note)
+          zettelkasten-extension))
 
 (defun zettelkasten-add-link-to-parent (note parent)
   "Add a link to NOTE from PARENT."
@@ -108,7 +127,8 @@ For supported options, please consult `format-time-string'."
 
 If PARENT is nil, it will not add a link from a parent."
   (let ((note (zettelkasten-generate-note-name)))
-    (zettelkasten-add-link-to-parent note (zettelkasten-get-id parent))
+    (when parent
+      (zettelkasten-add-link-to-parent note (zettelkasten-get-id parent)))
     (find-file (zettelkasten-make-filename note))
     (insert (concat "#+TITLE: " title
                     (format-time-string "\n#+DATE: %c\n#+TAGS:\n\n")))
@@ -117,12 +137,17 @@ If PARENT is nil, it will not add a link from a parent."
 (defun zettelkasten-create-new-note (prefix)
   "Create a new zettelkasten.
 
-If PREFIX is used, does not create a parent."
+If PREFIX is used, or if the `zettelkasten-directory' is empty,
+does not create a parent.
+
+Also see `zettelkasten-create-new-note-non-interactive' for more information."
   (interactive "P")
   (let ((title (read-string "Note title: "))
-        (parent (unless prefix (completing-read "Parent note: "
-                                 (zettelkasten-list-notes) nil 'match))))
-    (zettelkasten-create-new-note-non-interactive title parent)))
+        (notes (zettelkasten-list-notes)))
+    (zettelkasten-create-new-note-non-interactive
+     title
+     (unless (or prefix (not notes))
+       (completing-read "Parent note: " notes nil 'match)))))
 
 (defun zettelkasten-insert-link (note)
   "Insert a link to another NOTE in the current note."
