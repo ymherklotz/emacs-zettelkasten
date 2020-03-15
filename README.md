@@ -6,6 +6,8 @@ This emacs mode is meant to allow for a very simple wrapper over linked text fil
 
 Each file can then link to other files and they can easily be browsed through in emacs.
 
+This mode is completely standalone, it does not require any other tools so is easy to install, use and edit appropriately.
+
 ## How to use Zettelkasten
 
 To use Zettelkasten, first create a directory which will contain all your notes. This will be a flat directory, as tags are used to place notes into specific categories.
@@ -27,20 +29,38 @@ Then, you can activate the mode as follows.
 A new note can be created using
 
 ``` text
-zettelkasten-create-new-note
+M-x zettelkasten-create-new-note
 ```
-
-which is bound to `C-c k n` by default.
 
 ### Linking to a note
 
 To link to a note from the current note, use the following command:
 
 ``` text
-zettelkasten-insert-link
+M-x zettelkasten-insert-link
 ```
 
 which will open a list of available notes which you can choose to link to.
+
+### Opening a parent note
+
+To open a parent note of the current note, the following command can be used:
+
+``` text
+M-x zettelkasten-find-parent
+```
+
+This opens the chosen parent note from a list of available notes. This is bound to `C-c k p` by default.
+
+### Default bindings
+
+The default keymap for the mode is `C-c k`, this can easily be changed though by editing `zettelkasten-prefix`.
+
+| Function | Key | Description |
+|---|
+| `zettelkasten-create-new-note` | `n` | Create a new note and optionally link it to a parent. This can be disabled by using a prefix argument. |
+| `zettelkasten-insert-link` | `i` | Insert a link to a note. |
+| `zettelkasten-find-parent` | `p` | Choose from a list of parents of the current note and open the note. |
 
 ## Alternatives
 
