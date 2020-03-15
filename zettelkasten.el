@@ -60,20 +60,35 @@ For supported options, please consult `format-time-string'."
 
 (defun zettelkasten-filename-to-id (filename)
   "Convert FILENAME to id."
-  (string-match (format "\\(.*\\)\\.%s\\'" zettelkasten-extension) filename)
+  (string-match (format "\\([0-9]*\\)\\.%s\\'" zettelkasten-extension) filename)
   (match-string 1 filename))
 
-(defun zettelkasten-get-title (note)
-  "Return the NOTE's title."
+(defun zettelkasten-note-regexp (note regexp &optional num)
+  "Return the REGEXP first match in the NOTE.
+
+Return the NUMth match.  If NUM is nil, return the 0th match."
   (with-temp-buffer
     (insert-file-contents-literally
      (zettelkasten-make-filename note))
-    (re-search-forward "#\\+TITLE: \\(.*\\)")
-    (match-string 1)))
+    (when (re-search-forward regexp nil t)
+      (match-string (if num num 0)))))
 
 (defun zettelkasten-display-id-title (note)
   "Dispaly the NOTE's title and id."
-  (format "%s: %s" note (zettelkasten-get-title note)))
+  (format "%s: %s" note (zettelkasten-note-regexp
+                         note "#\\+TITLE: \\(.*\\)" 1)))
+
+(defun zettelkasten-match-link (current note)
+  "Return t if the link to CURRENT is in NOTE."
+  (when (zettelkasten-note-regexp
+         note
+         (let ((zk-link-format (replace-regexp-in-string
+                                "\\\\\\$" "$"
+                                (regexp-quote zettelkasten-link-format))))
+           (format zk-link-format
+                   ".*" current
+                   zettelkasten-extension)))
+    (zettelkasten-display-id-title note)))
 
 (defun zettelkasten-list-notes-by-id ()
   "Return all the ids that are currently available."
@@ -100,7 +115,7 @@ For supported options, please consult `format-time-string'."
                        zettelkasten-extension)
                current-string)
           (setq matched-string (concat (match-string 1 current-string) ": "
-                                (match-string 2 current-string)))
+                                       (match-string 2 current-string)))
           (setq match-list (append match-list (list matched-string))))
         (setq morelines (= 0 (forward-line 1)))))
     (kill-buffer "*Shell Command Output*")
@@ -181,17 +196,30 @@ Also see `zettelkasten-create-new-note-ni' for more information."
                           (zettelkasten-list-notes) nil 'match)))
   (insert (zettelkasten-format-link note)))
 
-(defun zettelkasten-find-parents-ni (note)
+(defun zettelkasten-open-parent (&optional note)
   "Find the parent notes to the NOTE that is given.
 
 The format of the NOTE is anything that can be ready by
   `zettelkasten-get-id'."
-  )
+  (interactive)
+  (let* ((act-note
+          (if note (zettelkasten-get-id note)
+            (zettelkasten-filename-to-id (buffer-file-name))))
+         (selected (completing-read
+                    "Notes: "
+                    (delete
+                     nil
+                     (mapcar #'(lambda (el) (zettelkasten-match-link
+                                             act-note el))
+                             (zettelkasten-list-notes-by-id)))
+                    nil 'match)))
+    (find-file (zettelkasten-make-filename (zettelkasten-get-id selected)))))
 
 (defvar zettelkasten-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "i" 'zettelkasten-insert-link)
     (define-key map "n" 'zettelkasten-create-new-note)
+    (define-key map "p" 'zettelkasten-open-parent)
     map))
 
 (defvar zettelkasten-minor-mode-map
