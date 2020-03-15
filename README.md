@@ -1,0 +1,2 @@
+# Zettelkasten mode for Emacs
+
