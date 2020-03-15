@@ -146,7 +146,8 @@ If PREFIX is used, does not create a parent."
 (define-minor-mode zettelkasten-mode
   "Enable the keymaps to be used with zettelkasten."
   :lighter " zettelkasten"
-  :keymap zettelkasten-minor-mode-map)
+  :keymap zettelkasten-minor-mode-map
+  :global t)
 
 (provide 'zettelkasten)
 
