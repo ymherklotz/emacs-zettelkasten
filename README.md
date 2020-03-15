@@ -57,7 +57,7 @@ This opens the chosen parent note from a list of available notes. This is bound 
 The default keymap for the mode is `C-c k`, this can easily be changed though by editing `zettelkasten-prefix`.
 
 | Function | Key | Description |
-|---|
+|---|---|---|
 | `zettelkasten-create-new-note` | `n` | Create a new note and optionally link it to a parent. This can be disabled by using a prefix argument. |
 | `zettelkasten-insert-link` | `i` | Insert a link to a note. |
 | `zettelkasten-find-parent` | `p` | Choose from a list of parents of the current note and open the note. |
