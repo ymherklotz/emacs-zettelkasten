@@ -127,7 +127,6 @@ For supported options, please consult `format-time-string'."
   "Create the new note name."
   (zettelkasten-find-new-note-name
    (format-time-string zettelkasten-file-format)))
-(zettelkasten-generate-note-name)
 
 (defun zettelkasten-get-id (note)
   "Return the id for a NOTE."
@@ -142,16 +141,16 @@ For supported options, please consult `format-time-string'."
           zettelkasten-extension))
 
 (defun zettelkasten-add-link-to-parent (note parent)
-  "Add a link to NOTE from PARENT."
+  "Add a link to NOTE from a PARENT."
   (with-temp-file (zettelkasten-make-filename parent)
     (insert-file-contents-literally (zettelkasten-make-filename parent))
     (goto-char (point-max))
     (insert (concat "\n" (zettelkasten-format-link note)))))
 
-(defun zettelkasten-create-new-note-ni (title parent)
-  "Create a new note based on the TITLE and it's PARENT note.
+(defun zettelkasten-create-new-note-ni (title &optional parent)
+  "Create a new note based on the TITLE and it's optional PARENT note.
 
-If PARENT is nil, it will not add a link from a parent."
+If PARENT is nil, it will not add a link from a PARENT."
   (let ((note (zettelkasten-generate-note-name)))
     (when parent
       (zettelkasten-add-link-to-parent note (zettelkasten-get-id parent)))
