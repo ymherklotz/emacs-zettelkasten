@@ -128,9 +128,7 @@ Return the NUMth match.  If NUM is nil, return the 0th match."
 
 (defun zettelkasten-find-new-note-name (note)
   "Iterate on ITERATION until a usable file based on NOTE is found."
-  (let ((expanded-name-it
-         (lambda (i) ))
-        (iteration 0)
+  (let ((iteration 0)
         (maxcount 10000))
     (while (and (< iteration maxcount)
                 (file-exists-p
