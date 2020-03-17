@@ -61,6 +61,7 @@ The default keymap for the mode is `C-c k`, this can easily be changed though by
 | `zettelkasten-create-new-note` | `n` | Create a new note and optionally link it to a parent. This can be disabled by using a prefix argument. |
 | `zettelkasten-insert-link` | `i` | Insert a link to a note. |
 | `zettelkasten-find-parent` | `p` | Choose from a list of parents of the current note and open the note. |
+| `zettelkasten-open-note` | `o` | Open a note from anywhere, using auto complete on the ID or TITLE of the note. |
 
 ## Alternatives
 
