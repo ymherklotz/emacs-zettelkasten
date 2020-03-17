@@ -36,7 +36,7 @@ After that, changing the prefix key requires manipulating keymaps."
   :type 'string
   :group 'zettelkasten)
 
-(defcustom zettelkasten-file-format "%y%W%u%%02d-%%s"
+(defcustom zettelkasten-file-format "%y%W%u%%02d"
   "Format for new zettelkasten files.
 
 For supported options, please consult `format-time-string'."
