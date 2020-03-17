@@ -36,7 +36,7 @@ After that, changing the prefix key requires manipulating keymaps."
   :type 'string
   :group 'zettelkasten)
 
-(defcustom zettelkasten-file-format "%y%W%u%%02d"
+(defcustom zettelkasten-file-format "%y%W%u%%02d-%%s"
   "Format for new zettelkasten files.
 
 For supported options, please consult `format-time-string'."
@@ -75,8 +75,7 @@ Return the NUMth match.  If NUM is nil, return the 0th match."
 
 (defun zettelkasten-display-id-title (note)
   "Dispaly the NOTE's title and id."
-  (format "%s: %s" note (zettelkasten-note-regexp
-                         note "#\\+TITLE: \\(.*\\)" 1)))
+  (format "%s: %s" note (zettelkasten--get-note-title note)))
 
 (defun zettelkasten-match-link (current note)
   "Return t if the link to CURRENT is in NOTE."
@@ -88,7 +87,7 @@ Return the NUMth match.  If NUM is nil, return the 0th match."
            (format zk-link-format
                    ".*" current
                    zettelkasten-extension)))
-    (zettelkasten-display-id-title note)))
+    note))
 
 (defun zettelkasten-list-notes-by-id ()
   "Return all the ids that are currently available."
@@ -149,7 +148,7 @@ Return the NUMth match.  If NUM is nil, return the 0th match."
 (defun zettelkasten-format-link (note)
   "Format a link to a NOTE."
   (format zettelkasten-link-format
-          note
+          (zettelkasten--get-note-title note)
           (zettelkasten-get-id note)
           zettelkasten-extension))
 
@@ -194,6 +193,37 @@ Also see `zettelkasten-create-new-note-ni' for more information."
                           (zettelkasten-list-notes) nil 'match)))
   (insert (zettelkasten-format-link note)))
 
+(defun zettelkasten-find-parents (note)
+  "Find the parents of the NOTE."
+  (delete
+   nil
+   (mapcar #'(lambda (el) (zettelkasten-match-link
+                           note el))
+           (zettelkasten-list-notes-by-id))))
+
+(defun zettelkasten--get-note-title (note)
+  "Return the title of the NOTE."
+  (zettelkasten-note-regexp note "#\\+TITLE: \\(.*\\)" 1))
+
+(defun zettelkasten-org-export-preprocessor (backend)
+  "A preprocessor for zettelkasten directories, using the BACKEND.
+
+Adds information such as backlinks to the `org-mode' files before
+publishing."
+  (let ((notes (zettelkasten-find-parents
+                (zettelkasten-filename-to-id (buffer-file-name)))))
+    (when notes
+      (save-excursion
+        (goto-char (point-max))
+        (insert
+         (mapconcat 'identity (append
+          '("\n* Backlinks\n")
+           (mapcar
+            #'(lambda
+                (el)
+                (concat "- " (zettelkasten-format-link el) "\n"))
+            notes)) ""))))))
+
 (defun zettelkasten-open-parent (&optional note)
   "Find the parent notes to the NOTE that is given.
 
@@ -207,17 +237,26 @@ The format of the NOTE is anything that can be ready by
                     "Notes: "
                     (delete
                      nil
-                     (mapcar #'(lambda (el) (zettelkasten-match-link
-                                             act-note el))
+                     (mapcar #'(lambda (el)
+                                 (zettelkasten-display-id-title
+                                  (zettelkasten-match-link act-note el)))
                              (zettelkasten-list-notes-by-id)))
                     nil 'match)))
     (find-file (zettelkasten-make-filename (zettelkasten-get-id selected)))))
+
+(defun zettelkasten-open-note (note)
+  "Open an existing NOTE, searching by title and id."
+  (interactive
+   (list (completing-read "Notes: "
+                          (zettelkasten-list-notes) nil 'match)))
+  (find-file (zettelkasten-make-filename (zettelkasten-get-id note))))
 
 (defvar zettelkasten-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "i" 'zettelkasten-insert-link)
     (define-key map "n" 'zettelkasten-create-new-note)
     (define-key map "p" 'zettelkasten-open-parent)
+    (define-key map "o" 'zettelkasten-open-note)
     map))
 
 (defvar zettelkasten-minor-mode-map

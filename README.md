@@ -65,3 +65,7 @@ The default keymap for the mode is `C-c k`, this can easily be changed though by
 ## Alternatives
 
 An alternative to use Zettelkasten in emacs is [Zetteldeft](https://github.com/EFLS/zetteldeft), which uses Deft as a backend to search files.
+
+Another beefier alternative is [org-roam](https://github.com/jethrokuan/org-roam/), which is a fully integrated note taking system based on a wiki-system.
+
+Finally, [org-brain](https://github.com/Kungsgeten/org-brain) is a similar note-taking system that is meant for concept mapping in Emacs.
