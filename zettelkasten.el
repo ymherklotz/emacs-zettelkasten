@@ -88,9 +88,9 @@ aims to remove."
           (zettelkasten--get-id note)
           zettelkasten-extension))
 
-;;; -------------
+;;; ---------------------------
 ;;; LISTING AND SEARCHING NOTES
-;;; -------------
+;;; ---------------------------
 
 (defun zettelkasten--note-regexp (note regexp &optional num)
   "Return the REGEXP first match in the NOTE.
