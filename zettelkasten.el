@@ -177,14 +177,17 @@ This is deprecated in favour for `zettelkasten-list-notes'."
   "Create a new note based on the TITLE and it's optional PARENT note.
 
 If PARENT is nil, it will not add a link from a PARENT."
-  (let ((note (zettelkasten--find-new-note-name
-   (format-time-string zettelkasten-file-format))))
+  (let* ((note (zettelkasten--find-new-note-name
+                (format-time-string zettelkasten-file-format)))
+         (filename (zettelkasten--make-filename note)))
+    (with-temp-buffer
+      (set-visited-file-name filename)
+      (insert (concat "#+TITLE: " title
+                      (format-time-string "\n#+DATE: %c\n#+TAGS:\n\n")))
+      (save-buffer))
     (when parent
       (zettelkasten--add-link-to-parent note (zettelkasten--get-id parent)))
-    (find-file (zettelkasten--make-filename note))
-    (insert (concat "#+TITLE: " title
-                    (format-time-string "\n#+DATE: %c\n#+TAGS:\n\n")))
-    (save-buffer)))
+    (find-file filename)))
 
 (defun zettelkasten--find-parents (note)
   "Find the parents of the NOTE."
@@ -214,12 +217,43 @@ publishing."
         (goto-char (point-max))
         (insert
          (mapconcat 'identity (append
-          '("\n* Backlinks\n")
-           (mapcar
-            #'(lambda
-                (el)
-                (concat "- " (zettelkasten--format-link el) "\n"))
-            notes)) ""))))))
+                               '("\n* Backlinks\n")
+                               (mapcar
+                                #'(lambda
+                                    (el)
+                                    (concat "- " (zettelkasten--format-link el) "\n"))
+                                notes)) ""))))))
+
+;;; -----------------
+;;; DEALING WITH TAGS
+;;; -----------------
+
+(defun zettelkasten--get-tags (note)
+  "Get all the tags for a specific NOTE."
+  (let ((tags (zettelkasten--note-regexp
+               note "#\\+TAGS: \\(.*\\)" 1)))
+    (when tags
+      (mapcar 's-trim (s-split "," tags)))))
+
+(defun zettelkasten--get-tags-and-ids ()
+  "Return a mapping from TAGS to ids for NOTE."
+  (let ((tags nil)
+        (onlytags nil))
+    (mapc
+     #'(lambda (note)
+         (mapc
+          #'(lambda (el)
+              (when el
+                (let* ((ismember (member el tags))
+                       (currlist (cdr ismember)))
+                  (if ismember
+                      (setcar currlist (append (car currlist) (list note)))
+                    (progn
+                      (setq tags (append (list el (list note)) tags))
+                      (push el onlytags))))))
+          (zettelkasten--get-tags note)))
+     (zettelkasten--list-notes-by-id))
+    (append (list onlytags) tags)))
 
 ;;; ---------------------
 ;;; INTERACTIVE FUNCTIONS
@@ -230,7 +264,7 @@ publishing."
   (interactive
    (list (completing-read "Notes: "
                           (zettelkasten--list-notes) nil 'match)))
-  (insert (zettelkasten--format-link note)))
+  (insert (zettelkasten--format-link (zettelkasten--get-id note))))
 
 (defun zettelkasten-create-new-note (prefix)
   "Create a new zettelkasten.
@@ -270,17 +304,36 @@ The format of the NOTE is anything that can be ready by
                           (zettelkasten--list-notes) nil 'match)))
   (find-file (zettelkasten--make-filename (zettelkasten--get-id note))))
 
+(defun zettelkasten-open-note-by-tag ()
+  "Open a note by filtering on tags."
+  (interactive)
+  (let* ((all (zettelkasten--get-tags-and-ids))
+         (onlytags (car all))
+         (tags (cdr all))
+         (chosentag (completing-read
+                     "Tags: "
+                     onlytags
+                     nil 'match))
+         (chosennote
+          (let ((ismember (member chosentag tags)))
+            (completing-read
+             "Note: "
+             (mapcar 'zettelkasten--display-for-search (car (cdr ismember)))
+             nil 'match))))
+    (find-file (zettelkasten--make-filename (zettelkasten--get-id chosennote)))))
+
+;;; ---------------------------------
+;;; FUNCTIONS FOR `zettelkasten-mode'
+;;; ---------------------------------
+
 (defvar zettelkasten-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "i" 'zettelkasten-insert-link)
     (define-key map "n" 'zettelkasten-create-new-note)
     (define-key map "p" 'zettelkasten-open-parent)
     (define-key map "o" 'zettelkasten-open-note)
+    (define-key map "t" 'zettelkasten-open-note-by-tag)
     map))
-
-;;; ---------------------------------
-;;; FUNCTIONS FOR `zettelkasten-mode'
-;;; ---------------------------------
 
 (defvar zettelkasten-minor-mode-map
   (let ((map (make-sparse-keymap)))
