@@ -78,7 +78,7 @@ Meant for displaying when searching."
 
 The note may be formatted with some title, which this function
 aims to remove."
-  (string-match "\\([0-9]*\\)" note)
+  (string-match "[^0-9]*\\([0-9]+\\)" note)
   (match-string 1 note))
 
 (defun zettelkasten--format-link (note)
@@ -102,6 +102,18 @@ Return the NUMth match.  If NUM is nil, return the 0th match."
     (when (re-search-forward regexp nil t)
       (match-string (if num num 0)))))
 
+(defun zettelkasten--note-regexp-multiple (note regexp &optional num)
+  "Return the REGEXP matches in the NOTE.
+
+Return the NUMth match.  If NUM is nil, return the 0th match."
+  (with-temp-buffer
+    (insert-file-contents-literally
+     (zettelkasten--make-filename note))
+    (let (match-list)
+      (while (re-search-forward regexp nil t)
+        (setq match-list (append match-list (list (match-string (if num num 0))))))
+      match-list)))
+
 (defun zettelkasten--match-link (current note)
   "Return the note if the link to CURRENT is in the NOTE."
   (when (zettelkasten--note-regexp
@@ -119,7 +131,7 @@ Return the NUMth match.  If NUM is nil, return the 0th match."
   (mapcar 'zettelkasten--filename-to-id
           (directory-files
            (expand-file-name zettelkasten-directory) nil
-           (format "\\.%s$" zettelkasten-extension) t)))
+           (format "[0-9]+\\.%s$" zettelkasten-extension) t)))
 
 (defun zettelkasten--list-notes-grep ()
   "Return all the ids and titles of notes in the `zettelkasten-directory'.
@@ -151,6 +163,20 @@ This is deprecated in favour for `zettelkasten-list-notes'."
   "Return all the ids and titles of notes in the `zettelkasten-directory'."
   (mapcar 'zettelkasten--display-for-search
           (zettelkasten--list-notes-by-id)))
+
+(defun zettelkasten--list-links (note)
+  "List all notes that the current NOTE links to."
+  (sort
+   (cl-remove-duplicates
+    (mapcar 'zettelkasten--get-id
+            (zettelkasten--note-regexp-multiple
+             note
+             (let ((zk-link-format (replace-regexp-in-string
+                                    "\\\\\\$" "$"
+                                    (regexp-quote zettelkasten-link-format))))
+               (format zk-link-format
+                       ".*" ".*"
+                       zettelkasten-extension))))) 'string<))
 
 ;;; ------------------
 ;;; CREATING NEW NOTES
@@ -201,29 +227,6 @@ If PARENT is nil, it will not add a link from a PARENT."
   "Return the title of the NOTE."
   (zettelkasten--note-regexp note "#\\+TITLE: \\(.*\\)" 1))
 
-;;; -------------------------------
-;;; HELPER FUNCTIONS FOR `org-mode'
-;;; -------------------------------
-
-(defun zettelkasten-org-export-preprocessor (backend)
-  "A preprocessor for zettelkasten directories, using the BACKEND.
-
-Adds information such as backlinks to the `org-mode' files before
-publishing."
-  (let ((notes (zettelkasten--find-parents
-                (zettelkasten--filename-to-id (buffer-file-name)))))
-    (when notes
-      (save-excursion
-        (goto-char (point-max))
-        (insert
-         (mapconcat 'identity (append
-                               '("\n* Backlinks\n")
-                               (mapcar
-                                #'(lambda
-                                    (el)
-                                    (concat "- " (zettelkasten--format-link el) "\n"))
-                                notes)) ""))))))
-
 ;;; -----------------
 ;;; DEALING WITH TAGS
 ;;; -----------------
@@ -254,6 +257,81 @@ publishing."
           (zettelkasten--get-tags note)))
      (zettelkasten--list-notes-by-id))
     (append (list onlytags) tags)))
+
+;;; -------------------------------
+;;; HELPER FUNCTIONS FOR `org-mode'
+;;; -------------------------------
+
+(defun zettelkasten--indent (amount str-list)
+  "Indent STR-LIST by some AMOUNT."
+  (mapcar #'(lambda (n) (concat (make-string amount ?\s) n)) str-list))
+
+(defun zettelkasten--generate-list-for-note-nc (notes)
+  "Generate a list of NOTES."
+  (if notes
+      (apply #'append
+             (mapcar #'(lambda (n)
+                         (cons (concat "- " (zettelkasten--format-link n) "\n")
+                               (zettelkasten--indent
+                                2 (zettelkasten--generate-list-for-note-nc
+                                   (zettelkasten--list-links n)))))
+                     notes)) ""))
+
+(defun zettelkasten--generate-list-for-note (note)
+  "Generate a list of links for NOTE."
+  (zettelkasten--generate-list-for-note-nc (zettelkasten--list-links note)))
+
+(defun zettelkasten-generate-site-map (title files)
+  "Generate the site map for the Zettelkasten using TITLE and FILES."
+  (let* ((ti (zettelkasten--get-tags-and-ids))
+         (tags (sort (car ti) 'string<)))
+    (concat
+     "#+TITLE: " title "\n\n"
+     (apply
+      #'concat
+      (mapcar
+       #'(lambda (tag)
+           (concat "[[#" tag "][" tag "]] \| "))
+       tags))
+     "\n\n* Index\n\n"
+     (apply
+      #'concat
+      (zettelkasten--generate-list-for-note "2010700"))
+     "\n* Tags\n\n"
+     (apply
+      #'concat
+      (mapcar
+       #'(lambda (tag)
+           (let* ((ismember (member tag ti))
+                  (currlist (car (cdr ismember))))
+             (concat "** " tag "\n  :PROPERTIES:\n  :CUSTOM_ID: " tag "\n  :END:\n\n"
+                (apply
+                 'concat
+                 (mapcar
+                  #'(lambda (note)
+                      (concat "- " (zettelkasten--format-link note) "\n"))
+                  currlist))
+                "\n")))
+       tags)))))
+
+(defun zettelkasten-org-export-preprocessor (backend)
+  "A preprocessor for Zettelkasten directories, using the BACKEND.
+
+Adds information such as backlinks to the `org-mode' files before
+publishing."
+  (let ((notes (zettelkasten--find-parents
+                (zettelkasten--filename-to-id (buffer-file-name)))))
+    (when notes
+      (save-excursion
+        (goto-char (point-max))
+        (insert
+         (mapconcat 'identity (append
+                               '("\n* Backlinks\n")
+                               (mapcar
+                                #'(lambda
+                                    (el)
+                                    (concat "- " (zettelkasten--format-link el) "\n"))
+                                notes)) ""))))))
 
 ;;; ---------------------
 ;;; INTERACTIVE FUNCTIONS
