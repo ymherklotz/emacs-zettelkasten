@@ -26,6 +26,8 @@
 
 ;;; Code:
 
+(require 's)
+
 (defgroup zettelkasten nil
   "Helper to work with zettelkasten notes."
   :group 'applications)
