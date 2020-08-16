@@ -310,7 +310,7 @@ If PARENT is nil, it will not add a link from a PARENT."
      "\n\n* Index\n\n"
      (apply
       #'concat
-      (zettelkasten--generate-list-for-note-nc (zettelkasten--list-notes-without-parents)))
+      (zettelkasten--generate-list-for-note-nc (sort (zettelkasten--list-notes-without-parents) 'string>)))
      "\n* Tags\n\n"
      (apply
       #'concat
