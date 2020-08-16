@@ -289,6 +289,12 @@ If PARENT is nil, it will not add a link from a PARENT."
   "Generate a list of links for NOTE."
   (zettelkasten--generate-list-for-note-nc (zettelkasten--list-links note)))
 
+(defun zettelkasten--list-notes-without-parents ()
+  "List all the notes that do not have any parents."
+  (delete nil (mapcar #'(lambda (n)
+                          (if (zettelkasten--find-parents n) nil n))
+                      (zettelkasten--list-notes-by-id))))
+
 (defun zettelkasten-generate-site-map (title files)
   "Generate the site map for the Zettelkasten using TITLE and FILES."
   (let* ((ti (zettelkasten--get-tags-and-ids))
@@ -304,7 +310,7 @@ If PARENT is nil, it will not add a link from a PARENT."
      "\n\n* Index\n\n"
      (apply
       #'concat
-      (zettelkasten--generate-list-for-note-nc (zettelkasten--list-notes-by-id)))
+      (zettelkasten--generate-list-for-note-nc (zettelkasten--list-notes-without-parents)))
      "\n* Tags\n\n"
      (apply
       #'concat
