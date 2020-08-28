@@ -325,7 +325,17 @@ If PARENT is nil, it will not add a link from a PARENT."
                   #'(lambda (note)
                       (concat "- " (zettelkasten--format-link note) "\n"))
                   currlist))
-                "\n")))
+                "\n")
+             (with-temp-buffer
+               (set-visited-file-name (concat tag ".org"))
+               (insert (concat "#+TITLE: " tag "\n\n"
+                               (apply
+                                'concat
+                                (mapcar
+                                 #'(lambda (note)
+                                     (concat "- " (zettelkasten--format-link note) "\n"))
+                                 currlist))))
+               (save-buffer))))
        tags)))))
 
 (defun zettelkasten-org-export-preprocessor (backend)
@@ -333,19 +343,29 @@ If PARENT is nil, it will not add a link from a PARENT."
 
 Adds information such as backlinks to the `org-mode' files before
 publishing."
-  (let ((notes (zettelkasten--find-parents
-                (zettelkasten--filename-to-id (buffer-file-name)))))
-    (when notes
+  (unless (string= (zettelkasten--filename-to-id (buffer-file-name)) "")
+    (let ((notes (zettelkasten--find-parents
+                  (zettelkasten--filename-to-id (buffer-file-name))))
+          (tags (zettelkasten--get-tags
+                 (zettelkasten--filename-to-id (buffer-file-name)))))
       (save-excursion
-        (goto-char (point-max))
-        (insert
-         (mapconcat 'identity (append
-                               '("\n* Backlinks\n")
-                               (mapcar
-                                #'(lambda
-                                    (el)
-                                    (concat "- " (zettelkasten--format-link el) "\n"))
-                                notes)) ""))))))
+        (when tags
+          (goto-char (point-min))
+          (insert
+           (concat "#+begin_export html\n<div class=\"tags\"><ul>\n"
+                   (mapconcat #'(lambda (el) (concat "<li><a href=\"" el
+                                                     ".html\">" el "</a></li>\n")) tags "")
+                   "</ul></div>\n#+end_export\n")))
+        (when notes
+          (goto-char (point-max))
+          (insert
+           (mapconcat 'identity (append
+                                 '("\n* Backlinks\n")
+                                 (mapcar
+                                  #'(lambda
+                                      (el)
+                                      (concat "- " (zettelkasten--format-link el) "\n"))
+                                  notes)) "")))))))
 
 ;;; ---------------------
 ;;; INTERACTIVE FUNCTIONS
