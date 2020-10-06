@@ -323,7 +323,7 @@ If PARENT is nil, it will not add a link from a PARENT."
              (with-temp-buffer
                (set-visited-file-name (concat tag ".org"))
                (set-buffer-file-coding-system 'utf-8)
-               (insert (concat "#+TITLE: " tag "\n\n"
+               (insert (concat "#+TITLE: " (capitalize tag) "\n\n"
                                (apply
                                 'concat
                                 (mapcar
@@ -331,7 +331,7 @@ If PARENT is nil, it will not add a link from a PARENT."
                                      (concat "- " (zettelkasten--format-link note) "\n"))
                                  currlist))))
                (save-buffer))
-             (concat "** " tag "\n  :PROPERTIES:\n  :CUSTOM_ID: " tag "\n  :END:\n\n"
+             (concat "** " (capitalize tag) "\n  :PROPERTIES:\n  :CUSTOM_ID: " tag "\n  :END:\n\n"
                 (apply
                  'concat
                  (mapcar
