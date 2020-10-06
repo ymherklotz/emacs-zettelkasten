@@ -217,6 +217,7 @@ If PARENT is nil, it will not add a link from a PARENT."
          (filename (zettelkasten--make-filename note)))
     (with-temp-buffer
       (set-visited-file-name filename)
+      (set-buffer-file-coding-system 'utf-8)
       (insert (concat "#+TITLE: " title
                       (format-time-string "\n#+DATE: %c\n#+TAGS:\n\n")))
       (save-buffer))
@@ -329,6 +330,7 @@ If PARENT is nil, it will not add a link from a PARENT."
                 "\n")
              (with-temp-buffer
                (set-visited-file-name (concat tag ".org"))
+               (set-buffer-file-coding-system 'utf-8)
                (insert (concat "#+TITLE: " tag "\n\n"
                                (apply
                                 'concat
