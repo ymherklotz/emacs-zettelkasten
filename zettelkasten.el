@@ -320,14 +320,6 @@ If PARENT is nil, it will not add a link from a PARENT."
        #'(lambda (tag)
            (let* ((ismember (member tag ti))
                   (currlist (car (cdr ismember))))
-             (concat "** " tag "\n  :PROPERTIES:\n  :CUSTOM_ID: " tag "\n  :END:\n\n"
-                (apply
-                 'concat
-                 (mapcar
-                  #'(lambda (note)
-                      (concat "- " (zettelkasten--format-link note) "\n"))
-                  currlist))
-                "\n")
              (with-temp-buffer
                (set-visited-file-name (concat tag ".org"))
                (set-buffer-file-coding-system 'utf-8)
@@ -338,7 +330,15 @@ If PARENT is nil, it will not add a link from a PARENT."
                                  #'(lambda (note)
                                      (concat "- " (zettelkasten--format-link note) "\n"))
                                  currlist))))
-               (save-buffer))))
+               (save-buffer))
+             (concat "** " tag "\n  :PROPERTIES:\n  :CUSTOM_ID: " tag "\n  :END:\n\n"
+                (apply
+                 'concat
+                 (mapcar
+                  #'(lambda (note)
+                      (concat "- " (zettelkasten--format-link note) "\n"))
+                  currlist))
+                "\n")))
        tags)))))
 
 (defun zettelkasten-org-export-preprocessor (backend)
