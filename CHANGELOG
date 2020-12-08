@@ -1,0 +1,8 @@
+2020-12-08  Yann Herklotz  <git@ymhg.org>
+
+	* v0.1.1: Release the first stable version of Zettelkasten.
+	Implemented simple Zettelkasten method, which just contains chronological notes and links to relate them.
+	(website): Better generation of website from the Zettelkasten.
+
+	* v0.1.0: First release.
+	Implement simple Zettelkasten method which also allows for a simple generation of a website.
