@@ -1,3 +1,7 @@
+2021-01-22  Yann Herklotz  <git@ymhg.org>
+
+	*  v0.2.0: Add org-zettelkasten, a different mode which adds helper functions to org-mode to use it as a Zettelkasten.
+
 2020-12-08  Yann Herklotz  <git@ymhg.org>
 
 	* v0.1.1: Release the first stable version of Zettelkasten.
