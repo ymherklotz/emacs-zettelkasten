@@ -90,10 +90,10 @@ aims to remove."
   (string-match "[^0-9]*\\([0-9]+\\)" note)
   (match-string 1 note))
 
-(defun zettelkasten--format-link (note)
+(defun zettelkasten--format-link (note &optional link-text)
   "Format a link to a NOTE."
   (format zettelkasten-link-format
-          (zettelkasten--get-note-title note)
+          (or link-text (zettelkasten--get-note-title note))
           (zettelkasten--get-id note)
           zettelkasten-extension))
 
@@ -375,11 +375,16 @@ publishing."
 ;;; ---------------------
 
 (defun zettelkasten-insert-link (note)
-  "Insert a link to another NOTE in the current note."
+  "Insert a link to another NOTE in the current note.
+if region is active use that as link text"
   (interactive
    (list (completing-read "Notes: "
                           (zettelkasten--list-notes) nil 'match)))
-  (insert (zettelkasten--format-link (zettelkasten--get-id note))))
+  (let ((region-text (when (use-region-p)
+                       (prog1 (buffer-substring-no-properties (region-beginning)
+                                                              (region-end))
+                         (delete-region (region-beginning) (region-end))))))
+    (insert (zettelkasten--format-link (zettelkasten--get-id note) region-text))))
 
 (defun zettelkasten-create-new-note (prefix)
   "Create a new zettelkasten.
