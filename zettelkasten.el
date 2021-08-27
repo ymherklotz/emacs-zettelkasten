@@ -300,8 +300,8 @@ If PARENT is nil, it will not add a link from a PARENT."
                           (if (zettelkasten--find-parents n) nil n))
                       (zettelkasten--list-notes-by-id))))
 
-(defun zettelkasten-generate-site-map (title files)
-  "Generate the site map for the Zettelkasten using TITLE and FILES."
+(defun zettelkasten-generate-site-map (title _)
+  "Generate the site map for the Zettelkasten using TITLE."
   (let* ((ti (zettelkasten--get-tags-and-ids))
          (tags (sort (car ti) #'string<)))
     (concat
@@ -344,8 +344,8 @@ If PARENT is nil, it will not add a link from a PARENT."
                 "\n")))
        tags)))))
 
-(defun zettelkasten-org-export-preprocessor (backend)
-  "A preprocessor for Zettelkasten directories, using the BACKEND.
+(defun zettelkasten-org-export-preprocessor (_)
+  "A preprocessor for Zettelkasten directories.
 
 Adds information such as backlinks to the `org-mode' files before
 publishing."
