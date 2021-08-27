@@ -1,15 +1,18 @@
-;;; zettelkasten.el --- Helper functions to organise notes.
+;;; zettelkasten.el --- Helper functions to organise notes in a Zettelkasten style  -*- lexical-binding: t; -*-
 
-;; Author: Yann Herklotz
-;; Keywords: notes
-;; Package-Requires: ((emacs "24.1"))
+;; Author: Yann Herklotz <yann@ymhg.org>
+;; URL: https://github.com/ymherklotz/emacs-zettelkasten
 ;; Version: 1.0.0
+;; Package-Requires: ((emacs "24.3"))
+;; Keywords: files, hypermedia, notes
 
 ;;; Commentary:
 
 ;; Used to organise notes using the Zettelkasten method.
-;;
-;; Copyright (C) 2020  Yann Herklotz
+
+;;; License:
+
+;; Copyright (C) 2020-2021  Yann Herklotz
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -112,7 +115,7 @@ Return the NUMth match.  If NUM is nil, return the 0th match."
       (match-string (if num num 0)))))
 
 (defun zettelkasten--note-regexp-multiple (note regexp &optional num)
-  "Return the REGEXP matches in the NOTE.
+  "Return the REGEXP matched in the NOTE.
 
 Return the NUMth match.  If NUM is nil, return the 0th match."
   (with-temp-buffer
@@ -137,7 +140,7 @@ Return the NUMth match.  If NUM is nil, return the 0th match."
 
 (defun zettelkasten--list-notes-by-id ()
   "Return all the ids that are currently available."
-  (mapcar 'zettelkasten--filename-to-id
+  (mapcar #'zettelkasten--filename-to-id
           (directory-files
            (expand-file-name zettelkasten-directory) nil
            (format "[0-9]+\\.%s$" zettelkasten-extension) t)))
@@ -170,14 +173,14 @@ This is deprecated in favour for `zettelkasten-list-notes'."
 
 (defun zettelkasten--list-notes ()
   "Return all the ids and titles of notes in the `zettelkasten-directory'."
-  (mapcar 'zettelkasten--display-for-search
+  (mapcar #'zettelkasten--display-for-search
           (zettelkasten--list-notes-by-id)))
 
 (defun zettelkasten--list-links (note)
   "List all notes that the current NOTE links to."
   (sort
    (cl-remove-duplicates
-    (mapcar 'zettelkasten--get-id
+    (mapcar #'zettelkasten--get-id
             (zettelkasten--note-regexp-multiple
              note
              (let ((zk-link-format (replace-regexp-in-string
@@ -185,7 +188,7 @@ This is deprecated in favour for `zettelkasten-list-notes'."
                                     (regexp-quote zettelkasten-link-format))))
                (format zk-link-format
                        ".*" ".*"
-                       zettelkasten-extension))))) 'string<))
+                       zettelkasten-extension))))) #'string<))
 
 ;;; ------------------
 ;;; CREATING NEW NOTES
@@ -246,7 +249,7 @@ If PARENT is nil, it will not add a link from a PARENT."
   (let ((tags (zettelkasten--note-regexp
                note "#\\+TAGS: \\(.*\\)" 1)))
     (when tags
-      (mapcar 's-trim (s-split "," tags)))))
+      (mapcar #'s-trim (s-split "," tags)))))
 
 (defun zettelkasten--get-tags-and-ids ()
   "Return a mapping from TAGS to ids for NOTE."
@@ -300,7 +303,7 @@ If PARENT is nil, it will not add a link from a PARENT."
 (defun zettelkasten-generate-site-map (title files)
   "Generate the site map for the Zettelkasten using TITLE and FILES."
   (let* ((ti (zettelkasten--get-tags-and-ids))
-         (tags (sort (car ti) 'string<)))
+         (tags (sort (car ti) #'string<)))
     (concat
      "#+TITLE: " title "\n\n"
      (apply
@@ -312,7 +315,7 @@ If PARENT is nil, it will not add a link from a PARENT."
      "\n\n* Index\n\n"
      (apply
       #'concat
-      (zettelkasten--generate-list-for-note-nc (sort (zettelkasten--list-notes-without-parents) 'string>)))
+      (zettelkasten--generate-list-for-note-nc (sort (zettelkasten--list-notes-without-parents) #'string>)))
      "\n* Tags\n\n"
      (apply
       #'concat
@@ -325,7 +328,7 @@ If PARENT is nil, it will not add a link from a PARENT."
                (set-buffer-file-coding-system 'utf-8)
                (insert (concat "#+TITLE: " (capitalize tag) "\n\n"
                                (apply
-                                'concat
+                                #'concat
                                 (mapcar
                                  #'(lambda (note)
                                      (concat "- " (zettelkasten--format-link note) "\n"))
@@ -333,7 +336,7 @@ If PARENT is nil, it will not add a link from a PARENT."
                (save-buffer))
              (concat "** " (capitalize tag) "\n  :PROPERTIES:\n  :CUSTOM_ID: " tag "\n  :END:\n\n"
                 (apply
-                 'concat
+                 #'concat
                  (mapcar
                   #'(lambda (note)
                       (concat "- " (zettelkasten--format-link note) "\n"))
@@ -362,7 +365,7 @@ publishing."
         (when notes
           (goto-char (point-max))
           (insert
-           (mapconcat 'identity (append
+           (mapconcat #'identity (append
                                  '("\n* Backlinks\n")
                                  (mapcar
                                   #'(lambda
@@ -407,7 +410,7 @@ The format of the NOTE is anything that can be ready by
             (zettelkasten--filename-to-id (buffer-file-name))))
          (selected (completing-read
                     "Notes: "
-                    (mapcar 'zettelkasten--display-for-search
+                    (mapcar #'zettelkasten--display-for-search
                             (zettelkasten--find-parents act-note))
                     nil 'match)))
     (find-file (zettelkasten--make-filename (zettelkasten--get-id selected)))))
@@ -433,7 +436,7 @@ The format of the NOTE is anything that can be ready by
           (let ((ismember (member chosentag tags)))
             (completing-read
              "Note: "
-             (mapcar 'zettelkasten--display-for-search (car (cdr ismember)))
+             (mapcar #'zettelkasten--display-for-search (car (cdr ismember)))
              nil 'match))))
     (find-file (zettelkasten--make-filename (zettelkasten--get-id chosennote)))))
 
@@ -443,11 +446,11 @@ The format of the NOTE is anything that can be ready by
 
 (defvar zettelkasten-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "i" 'zettelkasten-insert-link)
-    (define-key map "n" 'zettelkasten-create-new-note)
-    (define-key map "p" 'zettelkasten-open-parent)
-    (define-key map "o" 'zettelkasten-open-note)
-    (define-key map "t" 'zettelkasten-open-note-by-tag)
+    (define-key map "i" #'zettelkasten-insert-link)
+    (define-key map "n" #'zettelkasten-create-new-note)
+    (define-key map "p" #'zettelkasten-open-parent)
+    (define-key map "o" #'zettelkasten-open-note)
+    (define-key map "t" #'zettelkasten-open-note-by-tag)
     map))
 
 (defvar zettelkasten-minor-mode-map
@@ -456,6 +459,7 @@ The format of the NOTE is anything that can be ready by
     map)
   "Keymap used for binding footnote minor mode.")
 
+;;;###autoload
 (define-minor-mode zettelkasten-mode
   "Enable the keymaps to be used with zettelkasten."
   :lighter " zettelkasten"

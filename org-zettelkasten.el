@@ -1,9 +1,10 @@
-;;; org-zettelkasten.el --- Helper functions to use Zettelkasten in Org.
+;;; org-zettelkasten.el --- Helper functions to use Zettelkasten in `org-mode'  -*- lexical-binding: t; -*-
 
-;; Author: Yann Herklotz
-;; Keywords: notes
-;; Package-Requires: ((emacs "24.1"))
+;; Author: Yann Herklotz <yann@ymhg.org>
+;; URL: https://github.com/ymherklotz/emacs-zettelkasten
 ;; Version: 1.0.0
+;; Package-Requires: ((emacs "24.3") (org "9.0"))
+;; Keywords: files, hypermedia, Org, notes
 
 ;;; Commentary:
 
@@ -11,8 +12,10 @@
 ;;
 ;; It uses the CUSTOM_ID property to store a permanent ID to the note,
 ;; which are organised in the same fashion as the notes by Luhmann.
-;;
-;; Copyright (C) 2020  Yann Herklotz
+
+;;; License:
+
+;; Copyright (C) 2020-2021  Yann Herklotz
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -41,7 +44,14 @@
   :type 'string
   :group 'org-zettelkasten)
 
-(defun ymhg/incr-id (ident)
+(defcustom org-zettelkasten-prefix [(control ?c) ?y]
+  "Prefix key to use for Zettelkasten commands in Zettelkasten minor mode.
+The value of this variable is checked as part of loading Zettelkasten mode.
+After that, changing the prefix key requires manipulating keymaps."
+  :type 'key-sequence
+  :group 'zettelkasten)
+
+(defun org-zettelkasten-incr-id (ident)
   "Simple function to increment any IDENT.
 
 This might result in duplicate IDs though."
@@ -50,7 +60,7 @@ This might result in duplicate IDs though."
     (setcar last-ident (+ (car last-ident) 1))
     (concat ident-list)))
 
-(defun ymhg/incr-id-total (ident)
+(defun org-zettelkasten-incr-id-total (ident)
   "A better way to incement numerical IDENT.
 
 This might still result in duplicate IDENTs for an IDENT that
@@ -61,15 +71,15 @@ ends with a letter."
         (let ((pre (match-string 1 ident))
               (post (match-string 2 ident)))
           (concat pre (number-to-string (+ 1 (string-to-number post))))))
-    (ymhg/incr-id ident)))
+    (org-zettelkasten-incr-id ident)))
 
-(defun ymhg/branch-id (ident)
+(defun org-zettelkasten-branch-id (ident)
   "Create a branch ID from IDENT."
   (if (string-match-p ".*[0-9]$" ident)
       (concat ident "a")
     (concat ident "1")))
 
-(defun ymhg/org-zettelkasten-create (incr newheading)
+(defun org-zettelkasten-org-zettelkasten-create (incr newheading)
   "Creat a new heading according to INCR and NEWHEADING.
 
 INCR: function to increment the ID by.
@@ -82,13 +92,13 @@ NEWHEADING: function used to create the heading and set the current
 
 (defun org-zettelkasten-create-next ()
   "Create a heading at the same level as the current one."
-  (ymhg/org-zettelkasten-create
-   'ymhg/incr-id 'org-insert-heading))
+  (org-zettelkasten-org-zettelkasten-create
+   #'org-zettelkasten-incr-id #'org-insert-heading))
 
 (defun org-zettelkasten-create-branch ()
   "Create a branching heading at a level lower than the current."
-  (ymhg/org-zettelkasten-create
-   'ymhg/branch-id '(lambda () (org-insert-subheading ""))))
+  (org-zettelkasten-org-zettelkasten-create
+   #'org-zettelkasten-branch-id #'(lambda () (org-insert-subheading ""))))
 
 (defun org-zettelkasten-create-dwim ()
   "Create the right type of heading based on current position."
@@ -104,13 +114,30 @@ NEWHEADING: function used to create the heading and set the current
       (org-zettelkasten-create-branch))))
 
 (defun org-zettelkasten-search-current-id ()
-  "Use counsel-rg to search for the current ID in all files."
+  "Use `counsel-rg' to search for the current ID in all files."
   (interactive)
   (let ((current-id (org-entry-get nil "CUSTOM_ID")))
     (counsel-rg (concat "#" current-id) org-zettelkasten-directory "-g *.org" "ID: ")))
 
-(define-key org-mode-map (kbd "C-c y n") #'org-zettelkasten-create-dwim)
-(define-key org-mode-map (kbd "C-c y s") #'org-zettelkasten-search-current-id)
+(defvar org-zettelkasten-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "n" #'org-zettelkasten-create-dwim)
+    (define-key map "s" #'org-zettelkasten-search-current-id)
+    map))
+
+(defvar org-zettelkasten-minor-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map org-zettelkasten-prefix org-zettelkasten-mode-map)
+    map)
+  "Keymap used for binding footnote minor mode.")
+
+;;;###autoload
+(define-minor-mode org-zettelkasten-mode
+  "Enable the keymaps to be used with zettelkasten."
+  :lighter " org-zettelkasten"
+  :keymap org-zettelkasten-minor-mode-map)
+
+(add-hook 'org-mode-hook #'org-zettelkasten-mode)
 
 (provide 'org-zettelkasten)
 ;;; org-zettelkasten.el ends here
