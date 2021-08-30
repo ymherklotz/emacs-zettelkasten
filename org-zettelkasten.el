@@ -39,7 +39,7 @@
   "Helper to work with zettelkasten notes."
   :group 'applications)
 
-(defcustom org-zettelkasten-directory (concat (file-name-directory user-init-file) "/org-zettelkasten")
+(defcustom org-zettelkasten-directory (expand-file-name "~/org-zettelkasten")
   "Main zettelkasten directory."
   :type 'string
   :group 'org-zettelkasten)

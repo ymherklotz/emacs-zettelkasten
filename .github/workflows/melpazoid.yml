@@ -20,7 +20,7 @@ jobs:
         sudo apt-get install emacs && emacs --version
         git clone https://github.com/riscy/melpazoid.git ~/melpazoid
         pip install ~/melpazoid
-    - name: Run
+    - name: Check org-zettelkasten
       env:
         LOCAL_REPO: ${{ github.workspace }}
         # RECIPE is your recipe as written for MELPA:
@@ -28,7 +28,7 @@ jobs:
         # set this to false (or remove it) if the package isn't on MELPA:
         EXIST_OK: true
       run: echo $GITHUB_REF && make -C ~/melpazoid
-    - name: Run
+    - name: Check zettelkasten
       env:
         LOCAL_REPO: ${{ github.workspace }}
         # RECIPE is your recipe as written for MELPA:

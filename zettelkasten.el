@@ -43,7 +43,7 @@ After that, changing the prefix key requires manipulating keymaps."
   :type 'key-sequence
   :group 'zettelkasten)
 
-(defcustom zettelkasten-directory (concat (file-name-directory user-init-file) "/zettelkasten")
+(defcustom zettelkasten-directory (expand-file-name "~/zettelkasten")
   "Main zettelkasten directory."
   :type 'string
   :group 'zettelkasten)
