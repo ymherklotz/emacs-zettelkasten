@@ -7,7 +7,7 @@ name: melpazoid
 on: [push, pull_request]
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -24,7 +24,15 @@ jobs:
       env:
         LOCAL_REPO: ${{ github.workspace }}
         # RECIPE is your recipe as written for MELPA:
-        RECIPE: (shx :repo "riscy/shx-for-emacs" :fetcher github)
+        RECIPE: (org-zettelkasten :repo "ymherklotz/emacs-zettelkasten" :fetcher github :files ("org-zettelkasten.el"))
+        # set this to false (or remove it) if the package isn't on MELPA:
+        EXIST_OK: true
+      run: echo $GITHUB_REF && make -C ~/melpazoid
+    - name: Run
+      env:
+        LOCAL_REPO: ${{ github.workspace }}
+        # RECIPE is your recipe as written for MELPA:
+        RECIPE: (zettelkasten :repo "ymherklotz/emacs-zettelkasten" :fetcher github :files ("zettelkasten.el"))
         # set this to false (or remove it) if the package isn't on MELPA:
         EXIST_OK: true
       run: echo $GITHUB_REF && make -C ~/melpazoid
