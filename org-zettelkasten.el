@@ -1,4 +1,4 @@
-;;; org-zettelkasten.el --- Helper functions to use Zettelkasten in `org-mode'  -*- lexical-binding: t; -*-
+;;; org-zettelkasten.el --- Helper functions to use Zettelkasten in org-mode  -*- lexical-binding: t; -*-
 
 ;; Author: Yann Herklotz <yann@ymhg.org>
 ;; URL: https://github.com/ymherklotz/emacs-zettelkasten
@@ -39,7 +39,7 @@
   "Helper to work with zettelkasten notes."
   :group 'applications)
 
-(defcustom org-zettelkasten-directory "~/Dropbox/zk"
+(defcustom org-zettelkasten-directory (concat (file-name-directory user-init-file) "/org-zettelkasten")
   "Main zettelkasten directory."
   :type 'string
   :group 'org-zettelkasten)
@@ -98,7 +98,7 @@ NEWHEADING: function used to create the heading and set the current
 (defun org-zettelkasten-create-branch ()
   "Create a branching heading at a level lower than the current."
   (org-zettelkasten-org-zettelkasten-create
-   #'org-zettelkasten-branch-id #'(lambda () (org-insert-subheading ""))))
+   #'org-zettelkasten-branch-id (lambda () (org-insert-subheading ""))))
 
 (defun org-zettelkasten-create-dwim ()
   "Create the right type of heading based on current position."
@@ -136,8 +136,6 @@ NEWHEADING: function used to create the heading and set the current
   "Enable the keymaps to be used with zettelkasten."
   :lighter " org-zettelkasten"
   :keymap org-zettelkasten-minor-mode-map)
-
-(add-hook 'org-mode-hook #'org-zettelkasten-mode)
 
 (provide 'org-zettelkasten)
 ;;; org-zettelkasten.el ends here

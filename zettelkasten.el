@@ -3,7 +3,7 @@
 ;; Author: Yann Herklotz <yann@ymhg.org>
 ;; URL: https://github.com/ymherklotz/emacs-zettelkasten
 ;; Version: 0.3.0
-;; Package-Requires: ((emacs "24.3") (s "1.10.0"))
+;; Package-Requires: ((emacs "25.1") (s "1.10.0"))
 ;; Keywords: files, hypermedia, notes
 
 ;;; Commentary:
@@ -43,7 +43,7 @@ After that, changing the prefix key requires manipulating keymaps."
   :type 'key-sequence
   :group 'zettelkasten)
 
-(defcustom zettelkasten-directory "~/Dropbox/org/zettelkasten"
+(defcustom zettelkasten-directory (concat (file-name-directory user-init-file) "/zettelkasten")
   "Main zettelkasten directory."
   :type 'string
   :group 'zettelkasten)
@@ -94,7 +94,7 @@ aims to remove."
   (match-string 1 note))
 
 (defun zettelkasten--format-link (note &optional link-text)
-  "Format a link to a NOTE."
+  "Format a LINK-TEXT to a NOTE."
   (format zettelkasten-link-format
           (or link-text (zettelkasten--get-note-title note))
           (zettelkasten--get-id note)
@@ -209,7 +209,7 @@ This is deprecated in favour for `zettelkasten-list-notes'."
   (with-temp-file (zettelkasten--make-filename parent)
     (insert-file-contents-literally (zettelkasten--make-filename parent))
     (goto-char (point-max))
-    (insert (concat "\n" (zettelkasten--format-link note)))))
+    (insert "\n" (zettelkasten--format-link note))))
 
 (defun zettelkasten--create-new-note-ni (title &optional parent)
   "Create a new note based on the TITLE and it's optional PARENT note.
@@ -221,8 +221,8 @@ If PARENT is nil, it will not add a link from a PARENT."
     (with-temp-buffer
       (set-visited-file-name filename)
       (set-buffer-file-coding-system 'utf-8)
-      (insert (concat "#+TITLE: " title
-                      (format-time-string "\n#+DATE: %c\n#+TAGS:\n\n")))
+      (insert "#+TITLE: " title
+              (format-time-string "\n#+DATE: %c\n#+TAGS:\n\n"))
       (save-buffer))
     (when parent
       (zettelkasten--add-link-to-parent note (zettelkasten--get-id parent)))
@@ -232,8 +232,8 @@ If PARENT is nil, it will not add a link from a PARENT."
   "Find the parents of the NOTE."
   (delete
    nil
-   (mapcar #'(lambda (el) (zettelkasten--match-link
-                           note el))
+   (mapcar (lambda (el) (zettelkasten--match-link
+                         note el))
            (zettelkasten--list-notes-by-id))))
 
 (defun zettelkasten--get-note-title (note)
@@ -256,18 +256,18 @@ If PARENT is nil, it will not add a link from a PARENT."
   (let ((tags nil)
         (onlytags nil))
     (mapc
-     #'(lambda (note)
-         (mapc
-          #'(lambda (el)
-              (when el
-                (let* ((ismember (member el tags))
-                       (currlist (cdr ismember)))
-                  (if ismember
-                      (setcar currlist (append (car currlist) (list note)))
-                    (progn
-                      (setq tags (append (list el (list note)) tags))
-                      (push el onlytags))))))
-          (zettelkasten--get-tags note)))
+     (lambda (note)
+       (mapc
+        (lambda (el)
+          (when el
+            (let* ((ismember (member el tags))
+                   (currlist (cdr ismember)))
+              (if ismember
+                  (setcar currlist (append (car currlist) (list note)))
+                (progn
+                  (setq tags (append (list el (list note)) tags))
+                  (push el onlytags))))))
+        (zettelkasten--get-tags note)))
      (zettelkasten--list-notes-by-id))
     (append (list onlytags) tags)))
 
@@ -277,17 +277,17 @@ If PARENT is nil, it will not add a link from a PARENT."
 
 (defun zettelkasten--indent (amount str-list)
   "Indent STR-LIST by some AMOUNT."
-  (mapcar #'(lambda (n) (concat (make-string amount ?\s) n)) str-list))
+  (mapcar (lambda (n) (concat (make-string amount ?\s) n)) str-list))
 
 (defun zettelkasten--generate-list-for-note-nc (notes)
   "Generate a list of NOTES."
   (if notes
       (apply #'append
-             (mapcar #'(lambda (n)
-                         (cons (concat "- " (zettelkasten--format-link n) "\n")
-                               (zettelkasten--indent
-                                2 (zettelkasten--generate-list-for-note-nc
-                                   (zettelkasten--list-links n)))))
+             (mapcar (lambda (n)
+                       (cons (concat "- " (zettelkasten--format-link n) "\n")
+                             (zettelkasten--indent
+                              2 (zettelkasten--generate-list-for-note-nc
+                                 (zettelkasten--list-links n)))))
                      notes)) ""))
 
 (defun zettelkasten--generate-list-for-note (note)
@@ -296,8 +296,8 @@ If PARENT is nil, it will not add a link from a PARENT."
 
 (defun zettelkasten--list-notes-without-parents ()
   "List all the notes that do not have any parents."
-  (delete nil (mapcar #'(lambda (n)
-                          (if (zettelkasten--find-parents n) nil n))
+  (delete nil (mapcar (lambda (n)
+                        (if (zettelkasten--find-parents n) nil n))
                       (zettelkasten--list-notes-by-id))))
 
 (defun zettelkasten-generate-site-map (title _)
@@ -309,8 +309,8 @@ If PARENT is nil, it will not add a link from a PARENT."
      (apply
       #'concat
       (mapcar
-       #'(lambda (tag)
-           (concat "[[#" tag "][" tag "]] \| "))
+       (lambda (tag)
+         (concat "[[#" tag "][" tag "]] \| "))
        tags))
      "\n\n* Index\n\n"
      (apply
@@ -320,28 +320,28 @@ If PARENT is nil, it will not add a link from a PARENT."
      (apply
       #'concat
       (mapcar
-       #'(lambda (tag)
-           (let* ((ismember (member tag ti))
-                  (currlist (car (cdr ismember))))
-             (with-temp-buffer
-               (set-visited-file-name (concat tag ".org"))
-               (set-buffer-file-coding-system 'utf-8)
-               (insert (concat "#+TITLE: " (capitalize tag) "\n\n"
-                               (apply
-                                #'concat
-                                (mapcar
-                                 #'(lambda (note)
-                                     (concat "- " (zettelkasten--format-link note) "\n"))
-                                 currlist))))
-               (save-buffer))
-             (concat "** " (capitalize tag) "\n  :PROPERTIES:\n  :CUSTOM_ID: " tag "\n  :END:\n\n"
-                (apply
-                 #'concat
-                 (mapcar
-                  #'(lambda (note)
-                      (concat "- " (zettelkasten--format-link note) "\n"))
-                  currlist))
-                "\n")))
+       (lambda (tag)
+         (let* ((ismember (member tag ti))
+                (currlist (car (cdr ismember))))
+           (with-temp-buffer
+             (set-visited-file-name (concat tag ".org"))
+             (set-buffer-file-coding-system 'utf-8)
+             (insert "#+TITLE: " (capitalize tag) "\n\n"
+                     (apply
+                      #'concat
+                      (mapcar
+                       (lambda (note)
+                         (concat "- " (zettelkasten--format-link note) "\n"))
+                       currlist)))
+             (save-buffer))
+           (concat "** " (capitalize tag) "\n  :PROPERTIES:\n  :CUSTOM_ID: " tag "\n  :END:\n\n"
+                   (apply
+                    #'concat
+                    (mapcar
+                     (lambda (note)
+                       (concat "- " (zettelkasten--format-link note) "\n"))
+                     currlist))
+                   "\n")))
        tags)))))
 
 (defun zettelkasten-org-export-preprocessor (_)
@@ -358,19 +358,19 @@ publishing."
         (when tags
           (goto-char (point-min))
           (insert
-           (concat "#+begin_export html\n<div class=\"tags\"><ul>\n"
-                   (mapconcat #'(lambda (el) (concat "<li><a href=\"" el
-                                                     ".html\">" el "</a></li>\n")) tags "")
-                   "</ul></div>\n#+end_export\n")))
+           "#+begin_export html\n<div class=\"tags\"><ul>\n"
+           (mapconcat (lambda (el) (concat "<li><a href=\"" el
+                                           ".html\">" el "</a></li>\n")) tags "")
+           "</ul></div>\n#+end_export\n"))
         (when notes
           (goto-char (point-max))
           (insert
            (mapconcat #'identity (append
                                  '("\n* Backlinks\n")
                                  (mapcar
-                                  #'(lambda
-                                      (el)
-                                      (concat "- " (zettelkasten--format-link el) "\n"))
+                                  (lambda
+                                    (el)
+                                    (concat "- " (zettelkasten--format-link el) "\n"))
                                   notes)) "")))))))
 
 ;;; ---------------------
