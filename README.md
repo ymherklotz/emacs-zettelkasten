@@ -1,5 +1,7 @@
 # Zettelkasten mode for Emacs
 
+| Package | Melpa |
+|---|---|
 | `zettelkasten` | [![MELPA](https://melpa.org/packages/zettelkasten-badge.svg)](https://melpa.org/#/zettelkasten) |
 | `org-zettelkasten` | [![MELPA](https://melpa.org/packages/org-zettelkasten-badge.svg)](https://melpa.org/#/org-zettelkasten) |
 
