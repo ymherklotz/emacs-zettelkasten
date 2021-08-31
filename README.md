@@ -1,5 +1,9 @@
 # Zettelkasten mode for Emacs
 
+[![MELPA](https://melpa.org/packages/zettelkasten-badge.svg)](https://melpa.org/#/zettelkasten)
+
+[![MELPA](https://melpa.org/packages/org-zettelkasten-badge.svg)](https://melpa.org/#/org-zettelkasten)
+
 [Zettelkasten](https://zettelkasten.de/) is a note-taking technique designed to keep, and create new links between all the notes as they are written. This allows them to develop over time, link to various different topics and allow the notes to grow into a network over time. This helps draw connections between different fields.
 
 This emacs mode is meant to allow for a very simple wrapper over linked text files. By default, `org` files are used, which are linked through simple file links. The name of the file that is created is just a unique ID.
