@@ -13,7 +13,32 @@ Each file can then link to other files and they can easily be browsed through in
 
 This mode is completely standalone, it does not require any other tools so is easy to install, use and edit appropriately.
 
-## How to use Zettelkasten
+## `org-zettelkasten` and `zettelkasten`
+
+This repository contains two packages which are also on Melpa, and are separate from each other, giving two different ways to use the Zettelkasten method in Emacs.  One (`org-zettelkasten`) leverages emacs' [`org-mode`](https://orgmode.org/), and the other (`zettelkasten`) is an implementation from scratch, which can either use `org-mode` files or markdown files as a base.
+
+## How to use `org-zettelkasten`
+
+The method implemented in `org-zettelkasten` has been described in detail in a [blog article](https://yannherklotz.com/blog/2020-12-21-introduction-to-luhmanns-zettelkasten.html).  It leverages `org-mode` features such as `CUSTOM_ID`, 
+
+**Manual Installation**
+
+``` emacs-lisp
+(add-to-list 'load-path "/path/to/org-zettelkasten.el")
+(require 'org-zettelkasten)
+(add-hook 'org-mode-hook #'org-zettelkasten-mode)
+```
+
+**`use-package` from Melpa**
+
+``` emacs-lisp
+(use-package org-zettelkasten
+  :require t
+  :config
+  (add-hook 'org-mode-hook #'org-zettelkasten-mode))
+```
+
+## How to use `zettelkasten`
 
 To use Zettelkasten, first create a directory which will contain all your notes. This will be a flat directory, as tags are used to place notes into specific categories.
 
@@ -21,12 +46,23 @@ To use Zettelkasten, first create a directory which will contain all your notes.
 mkdir ~/zettelkasten
 ```
 
-Then, you can activate the mode as follows.
+Then, you can activate the mode as follows:
+
+**Manual Installation**
 
 ```emacs-lisp
-(add-to-list 'load-path "/path/to/zettelkasten")
+(add-to-list 'load-path "/path/to/zettelkasten.el")
 (require 'zettelkasten)
 (zettelkasten-mode t)
+```
+
+**`use-package` from Melpa**
+
+``` emacs-lisp
+(use-package zettelkasten
+  :require t
+  :config
+  (zettelkasten-mode t))
 ```
 
 ### Creating new notes
