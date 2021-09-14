@@ -1,5 +1,7 @@
 # Zettelkasten mode for Emacs
 
+[![melpazoid](https://github.com/ymherklotz/emacs-zettelkasten/actions/workflows/melpazoid.yml/badge.svg)](https://github.com/ymherklotz/emacs-zettelkasten/actions/workflows/melpazoid.yml)
+
 | Package | Melpa |
 |---|---|
 | `zettelkasten` | [![MELPA](https://melpa.org/packages/zettelkasten-badge.svg)](https://melpa.org/#/zettelkasten) |
