@@ -35,7 +35,7 @@ The method implemented in `org-zettelkasten` has been described in detail in a [
 
 ``` emacs-lisp
 (use-package org-zettelkasten
-  :require t
+  :ensure t
   :config
   (add-hook 'org-mode-hook #'org-zettelkasten-mode))
 ```
@@ -62,7 +62,7 @@ Then, you can activate the mode as follows:
 
 ``` emacs-lisp
 (use-package zettelkasten
-  :require t
+  :ensure t
   :config
   (zettelkasten-mode t))
 ```
