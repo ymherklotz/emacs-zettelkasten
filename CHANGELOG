@@ -1,7 +1,10 @@
 2021-10-02  Yann Herklotz  <git@ymhg.org>
 
-	* v0.3.0: Remove counsel as a dependency and add completion to
-	README.
+	* v0.4.0: Remove counsel dependency and add function to README.
+
+2021-08-27  Yann Herklotz  <git@ymhg.org>
+
+	* v0.3.0: Add all dependencies and fix for Melpa release.
 
 2021-01-22  Yann Herklotz  <git@ymhg.org>
 
