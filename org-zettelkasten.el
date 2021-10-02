@@ -3,7 +3,7 @@
 ;; Author: Yann Herklotz <yann@ymhg.org>
 ;; URL: https://github.com/ymherklotz/emacs-zettelkasten
 ;; Version: 0.3.0
-;; Package-Requires: ((emacs "24.3") (org "9.0") (counsel "0.12.0"))
+;; Package-Requires: ((emacs "24.3") (org "9.0"))
 ;; Keywords: files, hypermedia, Org, notes
 
 ;;; Commentary:
@@ -33,7 +33,6 @@
 ;;; Code:
 
 (require 'org)
-(require 'counsel)
 
 (defgroup org-zettelkasten nil
   "Helper to work with zettelkasten notes."
@@ -113,16 +112,9 @@ NEWHEADING: function used to create the heading and set the current
         (org-zettelkasten-create-next)
       (org-zettelkasten-create-branch))))
 
-(defun org-zettelkasten-search-current-id ()
-  "Use `counsel-rg' to search for the current ID in all files."
-  (interactive)
-  (let ((current-id (org-entry-get nil "CUSTOM_ID")))
-    (counsel-rg (concat "#" current-id) org-zettelkasten-directory "-g *.org" "ID: ")))
-
 (defvar org-zettelkasten-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "n" #'org-zettelkasten-create-dwim)
-    (define-key map "s" #'org-zettelkasten-search-current-id)
     map))
 
 (defvar org-zettelkasten-minor-mode-map
