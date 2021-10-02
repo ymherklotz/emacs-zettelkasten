@@ -1,5 +1,7 @@
 # Zettelkasten mode for Emacs
 
+[![melpazoid](https://github.com/ymherklotz/emacs-zettelkasten/actions/workflows/melpazoid.yml/badge.svg)](https://github.com/ymherklotz/emacs-zettelkasten/actions/workflows/melpazoid.yml)
+
 | Package | Melpa |
 |---|---|
 | `zettelkasten` | [![MELPA](https://melpa.org/packages/zettelkasten-badge.svg)](https://melpa.org/#/zettelkasten) |
@@ -75,7 +77,7 @@ leverages `org-mode` features such as `CUSTOM_ID`,
 
 ``` emacs-lisp
 (use-package org-zettelkasten
-  :require t
+  :ensure t
   :config
   (add-hook 'org-mode-hook #'org-zettelkasten-mode))
 ```
@@ -103,7 +105,7 @@ Then, you can activate the mode as follows:
 
 ``` emacs-lisp
 (use-package zettelkasten
-  :require t
+  :ensure t
   :config
   (zettelkasten-mode t))
 ```
