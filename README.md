@@ -48,6 +48,7 @@ all the back links of the current heading).
 
 ``` emacs-lisp
 (defun org-zettelkasten-search-current-id ()
+  "Use `consult-ripgrep' to search for the current ID in all files."
   (interactive)
   (let ((current-id (org-entry-get nil "CUSTOM_ID")))
     (consult-ripgrep org-zettelkasten-directory (concat "[\\[:]." current-id "\\]#"))))
