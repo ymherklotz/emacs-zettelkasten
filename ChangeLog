@@ -1,3 +1,9 @@
+2022-05-03  Yann Herklotz  <git@ymhg.org>
+
+	* Unreleased
+
+	(org): Add a date stamp to new notes.
+
 2021-10-02  Yann Herklotz  <git@ymhg.org>
 
 	* v0.4.0: Remove counsel dependency and add function to README.
