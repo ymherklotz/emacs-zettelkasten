@@ -87,7 +87,8 @@ NEWHEADING: function used to create the heading and set the current
   (let* ((current-id (org-entry-get nil "CUSTOM_ID"))
          (next-id (funcall incr current-id)))
     (funcall newheading)
-    (org-set-property "CUSTOM_ID" next-id)))
+    (org-set-property "CUSTOM_ID" next-id)
+    (org-set-property "EXPORT_DATE" (format-time-string (org-time-stamp-format t t)))))
 
 (defun org-zettelkasten-create-next ()
   "Create a heading at the same level as the current one."
