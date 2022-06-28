@@ -1,6 +1,6 @@
 2022-05-03  Yann Herklotz  <git@ymhg.org>
 
-	* Unreleased
+	* v0.5.0: Add date stamps to org-zettelkasten entries.
 
 	(org): Add a date stamp to new notes.
 
