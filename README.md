@@ -4,8 +4,8 @@
 
 | Package | Melpa |
 |---|---|
-| `zettelkasten` | [![MELPA](https://melpa.org/packages/zettelkasten-badge.svg)](https://melpa.org/#/zettelkasten) |
 | `org-zettelkasten` | [![MELPA](https://melpa.org/packages/org-zettelkasten-badge.svg)](https://melpa.org/#/org-zettelkasten) |
+| `zettelkasten` | [![MELPA](https://melpa.org/packages/zettelkasten-badge.svg)](https://melpa.org/#/zettelkasten) |
 
 [Zettelkasten](https://zettelkasten.de/) is a note-taking technique designed to keep, and create new
 links between all the notes as they are written. This allows them to develop over time, link to
