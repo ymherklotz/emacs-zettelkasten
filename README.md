@@ -12,14 +12,10 @@ links between all the notes as they are written. This allows them to develop ove
 various different topics and allow the notes to grow into a network over time. This helps draw
 connections between different fields.
 
-This emacs mode is meant to allow for a very simple wrapper over linked text files. By default,
-`org` files are used, which are linked through simple file links. The name of the file that is
-created is just a unique ID.
-
-Each file can then link to other files and they can easily be browsed through in emacs.
-
-This mode is completely standalone, it does not require any other tools so is easy to install, use
-and edit appropriately.
+The idea of this mode is to integrate fully into Emacs Org mode, trying to leverage most of its
+preexisting features.  It is split into two modes, the main one being `org-zettelkasten`, and a
+secondary standalone mode called `zettelkasten` which is a minimal implementation of existing
+Zettelkasten modes.
 
 ## `org-zettelkasten` and `zettelkasten`
 
@@ -27,6 +23,29 @@ This repository contains two packages which are also on Melpa, and are separate 
 giving two different ways to use the Zettelkasten method in Emacs.  One (`org-zettelkasten`)
 leverages emacs' [`org-mode`](https://orgmode.org/), and the other (`zettelkasten`) is an
 implementation from scratch, which can either use `org-mode` files or markdown files as a base.
+
+## How to use `org-zettelkasten`
+
+The method implemented in `org-zettelkasten` has been described in detail in a [blog
+article](https://yannherklotz.com/blog/2020-12-21-introduction-to-luhmanns-zettelkasten.html).  It
+leverages `org-mode` features such as `CUSTOM_ID`,
+
+**Manual Installation**
+
+``` emacs-lisp
+(add-to-list 'load-path "/path/to/org-zettelkasten.el")
+(require 'org-zettelkasten)
+(add-hook 'org-mode-hook #'org-zettelkasten-mode)
+```
+
+**`use-package` from Melpa**
+
+``` emacs-lisp
+(use-package org-zettelkasten
+  :ensure t
+  :config
+  (add-hook 'org-mode-hook #'org-zettelkasten-mode))
+```
 
 ### Tag search
 
@@ -58,29 +77,6 @@ all the back links of the current heading).
 
 ``` emacs-lisp
 (define-key org-zettelkasten-mode-map (kbd "s") #'org-zettelkasten-search-current-id)
-```
-
-## How to use `org-zettelkasten`
-
-The method implemented in `org-zettelkasten` has been described in detail in a [blog
-article](https://yannherklotz.com/blog/2020-12-21-introduction-to-luhmanns-zettelkasten.html).  It
-leverages `org-mode` features such as `CUSTOM_ID`,
-
-**Manual Installation**
-
-``` emacs-lisp
-(add-to-list 'load-path "/path/to/org-zettelkasten.el")
-(require 'org-zettelkasten)
-(add-hook 'org-mode-hook #'org-zettelkasten-mode)
-```
-
-**`use-package` from Melpa**
-
-``` emacs-lisp
-(use-package org-zettelkasten
-  :ensure t
-  :config
-  (add-hook 'org-mode-hook #'org-zettelkasten-mode))
 ```
 
 ## How to use `zettelkasten`
