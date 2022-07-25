@@ -15,7 +15,7 @@
 
 ;;; License:
 
-;; Copyright (C) 2020-2021  Yann Herklotz
+;; Copyright (C) 2020-2022  Yann Herklotz
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@
 The value of this variable is checked as part of loading Zettelkasten mode.
 After that, changing the prefix key requires manipulating keymaps."
   :type 'key-sequence
-  :group 'zettelkasten)
+  :group 'org-zettelkasten)
 
 (defun org-zettelkasten-incr-id (ident)
   "Simple function to increment any IDENT.
