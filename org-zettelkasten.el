@@ -113,6 +113,12 @@ NEWHEADING: function used to create the heading and set the current
         (org-zettelkasten-create-next)
       (org-zettelkasten-create-branch))))
 
+(defun org-zettelkasten-update-modified ()
+  "Update the modified timestamp, which can be done on save."
+  (interactive)
+  (org-set-property "modified" (format-time-string
+                                (org-time-stamp-format t t))))
+
 (defvar org-zettelkasten-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "n" #'org-zettelkasten-create-dwim)
