@@ -1,11 +1,14 @@
-;;; org-zettelkasten.el --- Helper functions to use Zettelkasten in org-mode  -*- lexical-binding: t; -*-
+;;; org-zettelkasten.el --- A Zettelkasten mode leveraging Org  -*- lexical-binding: t; -*-
 
+;; Copyright (C) 2021-2023  Yann Herklotz
+;;
 ;; Author: Yann Herklotz <yann@ymhg.org>
-;; Created: 2021
-;; Version: 0.3.0
-;; Package-Requires: ((emacs "24.3") (org "9.0"))
+;; Maintainer: Yann Herklotz <yann@ymhg.org>
 ;; Keywords: files, hypermedia, Org, notes
-;; Homepage: https://github.com/ymherklotz/emacs-zettelkasten
+;; Homepage: https://sr.ht/~ymherklotz/org-zettelkasten
+;; Package-Requires: ((emacs "25.1") (org "9.3"))
+
+;; Version: 0.7.0
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -40,12 +43,38 @@
   :type 'string
   :group 'org-zettelkasten)
 
+(defcustom org-zettelkasten-mapping nil
+  "Main zettelkasten directory."
+  :type '(alist :key-type (natnum :tag "Value")
+                :value-type (string :tag "File name"))
+  :group 'org-zettelkasten)
+
 (defcustom org-zettelkasten-prefix [(control ?c) ?y]
   "Prefix key to use for Zettelkasten commands in Zettelkasten minor mode.
 The value of this variable is checked as part of loading Zettelkasten mode.
 After that, changing the prefix key requires manipulating keymaps."
   :type 'key-sequence
   :group 'org-zettelkasten)
+
+(defun org-zettelkasten-abs-file (file)
+  "Return FILE name relative to `org-zettelkasten-directory'."
+  (expand-file-name file org-zettelkasten-directory))
+
+(defun org-zettelkasten-prefix (ident)
+  "Return the prefix identifier for IDENT.
+
+This function assumes that IDs will start with a number."
+  (when (string-match "^\\([0-9]*\\)" ident)
+    (string-to-number (match-string 1 ident))))
+
+(defun org-zettelkasten-goto-id (id)
+  "Go to an ID automatically."
+  (interactive "sID: #")
+  (let ((file (alist-get (org-zettelkasten-prefix id)
+                         org-zettelkasten-mapping)))
+    (org-link-open-from-string
+     (concat "[[file:" (org-zettelkasten-abs-file file)
+             "::#" id "]]"))))
 
 (defun org-zettelkasten-incr-id (ident)
   "Simple function to increment any IDENT.
@@ -76,7 +105,7 @@ ends with a letter."
     (concat ident "1")))
 
 (defun org-zettelkasten-org-zettelkasten-create (incr newheading)
-  "Creat a new heading according to INCR and NEWHEADING.
+  "Create a new heading according to INCR and NEWHEADING.
 
 INCR: function to increment the ID by.
 NEWHEADING: function used to create the heading and set the current
@@ -90,12 +119,16 @@ NEWHEADING: function used to create the heading and set the current
 (defun org-zettelkasten-create-next ()
   "Create a heading at the same level as the current one."
   (org-zettelkasten-org-zettelkasten-create
-   #'org-zettelkasten-incr-id #'org-insert-heading))
+   #'org-zettelkasten-incr-id #'org-insert-heading-after-current))
 
 (defun org-zettelkasten-create-branch ()
   "Create a branching heading at a level lower than the current."
   (org-zettelkasten-org-zettelkasten-create
-   #'org-zettelkasten-branch-id (lambda () (org-insert-subheading ""))))
+   #'org-zettelkasten-branch-id
+   (lambda ()
+     (org-back-to-heading)
+     (org-forward-heading-same-level 1 t)
+     (org-insert-subheading ""))))
 
 (defun org-zettelkasten-create-dwim ()
   "Create the right type of heading based on current position."
@@ -112,21 +145,51 @@ NEWHEADING: function used to create the heading and set the current
 
 (defun org-zettelkasten-update-modified ()
   "Update the modified timestamp, which can be done on save."
-  (interactive)
   (org-set-property "modified" (format-time-string
                                 (org-time-stamp-format t t))))
 
+(defun org-zettelkasten-all-files ()
+  "Return all files in the Zettelkasten with full path."
+  (mapcar #'org-zettelkasten-abs-file
+          (mapcar #'cdr org-zettelkasten-mapping)))
+
+(defun org-zettelkasten-buffer ()
+  "Check if the current buffer belongs to the Zettelkasten."
+  (member (buffer-file-name) (org-zettelkasten-all-files)))
+
+(defun org-zettelkasten-setup ()
+  "Activate `zettelkasten-mode' with hooks.
+
+This function only activates `zettelkasten-mode' in Org.  It also
+adds `org-zettelkasten-update-modified' to buffer local
+`before-save-hook'."
+  (add-hook
+   'org-mode-hook
+   (lambda ()
+     (when (org-zettelkasten-buffer)
+       (add-hook 'before-save-hook
+                 #'org-zettelkasten-update-modified
+                 nil 'local)
+       (org-zettelkasten-mode)))))
+
 (defun org-zettelkasten-search-current-id ()
-  "Search for references to the current ID the `org-zettelkasten'
-directory."
+  "Search for references to ID in `org-zettelkasten-directory'."
   (interactive)
   (let ((current-id (org-entry-get nil "CUSTOM_ID")))
     (lgrep (concat "[:[]." current-id "]") "*.org" org-zettelkasten-directory)))
 
+(defun org-zettelkasten-agenda-search-view ()
+  "Search for text using Org agenda in Zettelkasten files."
+  (interactive)
+  (let ((org-agenda-files (org-zettelkasten-all-files)))
+    (org-search-view)))
+
 (defvar org-zettelkasten-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "n" #'org-zettelkasten-create-dwim)
-    (define-key map "C-s" #'org-zettelkasten-search-current-id)
+    (define-key map (kbd "C-s") #'org-zettelkasten-search-current-id)
+    (define-key map "s" #'org-zettelkasten-agenda-search-view)
+    (define-key map (kbd "C-g") #'org-zettelkasten-goto-id)
     map))
 
 (defvar org-zettelkasten-minor-mode-map
