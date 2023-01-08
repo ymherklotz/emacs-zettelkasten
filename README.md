@@ -19,13 +19,6 @@ it provides helper functions to turn standard [Org](https://orgmode.org/) into a
 
 I am currently actively using `org-zettelkasten`, but will still be maintaining `zettelkasten` too.
 
-## `org-zettelkasten` and `zettelkasten`
-
-This repository contains two packages which are also on Melpa, and are separate from each other,
-giving two different ways to use the Zettelkasten method in Emacs.  One (`org-zettelkasten`)
-leverages emacs' [`org-mode`](https://orgmode.org/), and the other (`zettelkasten`) is an
-implementation from scratch, which can either use `org-mode` files or markdown files as a base.
-
 ## How to use `zettelkasten`
 
 To use Zettelkasten, first create a directory which will contain all your notes. This will be a flat
