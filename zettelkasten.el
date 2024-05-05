@@ -97,7 +97,7 @@ Meant for displaying when searching."
 
 The note may be formatted with some title, which this function
 aims to remove."
-  (string-match (format "[^0-9]*\\(%s\\)" zettelkasten-id-regexp) note)
+  (string-match (format "^\\(%s\\)" zettelkasten-id-regexp) note)
   (match-string 1 note))
 
 (defun zettelkasten--format-link (note &optional link-text)
