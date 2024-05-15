@@ -70,9 +70,9 @@ For supported options, please consult `format-time-string'."
   :type 'string
   :group 'zettelkasten)
 
-;;; -----------------------------
-;;; HELPER FUNCTIONS FOR NOTE IDs
-;;; -----------------------------
+;; -----------------------------
+;; HELPER FUNCTIONS FOR NOTE IDs
+;; -----------------------------
 
 (defun zettelkasten--make-filename (note)
   "Make a filename using the default directory and the NOTE passed to it."
@@ -107,9 +107,9 @@ aims to remove."
           (zettelkasten--get-id note)
           zettelkasten-extension))
 
-;;; ---------------------------
-;;; LISTING AND SEARCHING NOTES
-;;; ---------------------------
+;; ---------------------------
+;; LISTING AND SEARCHING NOTES
+;; ---------------------------
 
 (defun zettelkasten--note-regexp (note regexp &optional num)
   "Return the REGEXP first match in the NOTE.
@@ -197,9 +197,9 @@ This is deprecated in favour for `zettelkasten-list-notes'."
                        ".*" ".*"
                        zettelkasten-extension))))) #'string<))
 
-;;; ------------------
-;;; CREATING NEW NOTES
-;;; ------------------
+;; ------------------
+;; CREATING NEW NOTES
+;; ------------------
 
 (defun zettelkasten--find-new-note-name (note)
   "Iterate on ITERATION until a usable file based on NOTE is found."
@@ -250,9 +250,9 @@ will use that instead."
   "Return the title of the NOTE."
   (zettelkasten--note-regexp note "#\\+TITLE: \\(.*\\)" 1))
 
-;;; -----------------
-;;; DEALING WITH TAGS
-;;; -----------------
+;; -----------------
+;; DEALING WITH TAGS
+;; -----------------
 
 (defun zettelkasten--get-tags (note)
   "Get all the tags for a specific NOTE."
@@ -281,9 +281,9 @@ will use that instead."
      (zettelkasten--list-notes-by-id))
     (append (list onlytags) tags)))
 
-;;; -------------------------------
-;;; HELPER FUNCTIONS FOR `org-mode'
-;;; -------------------------------
+;; -------------------------------
+;; HELPER FUNCTIONS FOR `org-mode'
+;; -------------------------------
 
 (defun zettelkasten--indent (amount str-list)
   "Indent STR-LIST by some AMOUNT."
@@ -383,9 +383,9 @@ publishing."
                                     (concat "- " (zettelkasten--format-link el) "\n"))
                                   notes)) "")))))))
 
-;;; ---------------------
-;;; INTERACTIVE FUNCTIONS
-;;; ---------------------
+;; ---------------------
+;; INTERACTIVE FUNCTIONS
+;; ---------------------
 
 (defun zettelkasten-insert-link (note)
   "Insert a link to another NOTE in the current note.
@@ -472,9 +472,9 @@ The format of the NOTE is anything that can be ready by
              nil 'match))))
     (find-file (zettelkasten--make-filename (zettelkasten--get-id chosennote)))))
 
-;;; ---------------------------------
-;;; FUNCTIONS FOR `zettelkasten-mode'
-;;; ---------------------------------
+;; ---------------------------------
+;; FUNCTIONS FOR `zettelkasten-mode'
+;; ---------------------------------
 
 (defvar zettelkasten-mode-map
   (let ((map (make-sparse-keymap)))
